@@ -1,0 +1,3 @@
+[submodule "src/DetoursNT"]
+	path = src/DetoursNT
+	url = git@github.com:wbenny/DetoursNT.git
