@@ -4,9 +4,9 @@ injdrv is a proof-of-concept Windows Driver for injecting DLL into user-mode pro
 
 ### Motivation
 
-Even though [APCs](apc) are [undocumented to decent extent](inside-apc), the technique of using them to inject a DLL
+Even though [APCs][apc] are [undocumented to decent extent][inside-apc], the technique of using them to inject a DLL
 into a user-mode process is not new and has been talked through many times. Such APC can be queued from regular
-user-mode process (seen in [Cuckoo](apc-cuckoo)) as well as from kernel-mode driver (seen in [Blackbone](apc-blackbone)).
+user-mode process (seen in [Cuckoo][apc-cuckoo]) as well as from kernel-mode driver (seen in [Blackbone][apc-blackbone]).
 
 Despite its popularity, finding small, easy-to-understand and actually working projects demonstrating usage of this
 technique isn't very easy. This project tries to fill this gap.
@@ -24,12 +24,12 @@ technique isn't very easy. This project tries to fill this gap.
       and `wow64win.dll`
 - Because of that, injected DLL is dependent only on `ntdll.dll`
 - Demonstrative DLL performs hooking of few `ntdll.dll` functions
-    - Achieved using [DetoursNT](DetoursNT)
+    - Achieved using [DetoursNT][DetoursNT]
 - Detoured functions use `ETW` to inform which hooked function has been called
 
 ### Compilation
 
-Because [DetoursNT](DetoursNT) project is attached as a git submodule, which itself carries the [Detours](Detours)
+Because [DetoursNT][DetoursNT] project is attached as a git submodule, which itself carries the [Detours][Detours]
 git submodule, you must not forget to fetch them:
 
 `git clone --recurse-submodules git@github.com:wbenny/injdrv.git`
@@ -40,8 +40,8 @@ is [WDK][wdk].
 ### Implementation
 
 When the driver is loaded, it'll register two callbacks:
-- For process create/exit notification ([`PsSetCreateProcessNotifyRoutineEx`](MSDN-CreateProcessNotify))
-- For image load notification ([`PsSetLoadImageNotifyRoutine`](MSDN-LoadImageNotify))
+- For process create/exit notification ([`PsSetCreateProcessNotifyRoutineEx`][MSDN-CreateProcessNotify])
+- For image load notification ([`PsSetLoadImageNotifyRoutine`][MSDN-LoadImageNotify])
 
 When a new process is created, the driver allocates small structure, which will hold information relevant to the process
 injection, such as:
@@ -69,9 +69,9 @@ Here I will try to summarize some of them:
   It might be tempting to use `ZwAllocateVirtualMemory` and `ZwProtectVirtualMemory` but unfortunatelly, the second
   function is exported only since Windows 8.1.
 
-  The solution used in this driver is to create section ([`ZwCreateSection`](MSDN-CreateSection)), map it
-  ([`ZwMapViewOfSection`](MSDN-MapViewOfSection)) with `PAGE_READWRITE` protection, write the data, unmap it
-  ([`ZwUnmapViewOfSection`](MSDN-UnmapViewOfSection)) and then map it again with `PAGE_EXECUTE_READ` protection.
+  The solution used in this driver is to create section ([`ZwCreateSection`][MSDN-CreateSection]), map it
+  ([`ZwMapViewOfSection`][MSDN-MapViewOfSection]) with `PAGE_READWRITE` protection, write the data, unmap it
+  ([`ZwUnmapViewOfSection`][MSDN-UnmapViewOfSection]) and then map it again with `PAGE_EXECUTE_READ` protection.
 
 - With usage of sections another problem arises. Since this driver performs injection from the image load notification
   callback - which is often called from the `NtMapViewOfSection` function - we'd be calling `MapViewOfSection`
@@ -114,7 +114,7 @@ Here I will try to summarize some of them:
   >
   > The only processes that won't be injected by this method are:
   > - native processes (such as `csrss.exe`)
-  > - pico processes (such as applications running inside [Windows Subsystem for Linux](WSL))
+  > - pico processes (such as applications running inside [Windows Subsystem for Linux][WSL])
   > 
   > Injection of these processes is not in the scope of this project.
 
@@ -151,7 +151,7 @@ Here I will try to summarize some of them:
 
 - Injection of protected processes is simply skipped, as it triggers code-integrity errors. Such processes are detected
   by the `PsIsProtectedProcess` function. If you're curious about workaround of this issue (by temporarily unprotecting
-  these processes), you can peek into [Blackbone source code](blackbone-unprotect-process). Keep in mind that
+  these processes), you can peek into [Blackbone source code][blackbone-unprotect-process]. Keep in mind that
   unprotecting protected processes requires manipulation with undocumented structures, which change dramatically
   between Windows versions.
 
@@ -168,12 +168,12 @@ Here I will try to summarize some of them:
   - https://www.sentinelone.com/blog/deep-hooks-monitoring-native-execution-wow64-applications-part-3
 
   In short, if you try to use the same approach as mentioned above (injecting small stub which calls `LdrLoadDll`)
-  for injecting x64 DLL into WoW64 process, you will run into problems with [Control Flow Guard](MSDN-CFG) on
+  for injecting x64 DLL into WoW64 process, you will run into problems with [Control Flow Guard][MSDN-CFG] on
   Windows 10.
   - On x64 system, CFG maintains 2 bitmaps for WoW64 processes
     - One for "x86 address space" (used when checking execution of < 4GB memory)
     - One for "x64 address space" (used when checking execution of >= 4 GB memory)
-  - You cannot allocate memory in > 4GB range (even from the kernel-mode), because of [VAD](VAD) that reserves this
+  - You cannot allocate memory in > 4GB range (even from the kernel-mode), because of [VAD][VAD] that reserves this
     memory range
     - You can theoretically unlink such VAD from `EPROCESS->VadRoot` and decrement `EPROCESS->VadCount`, but that's
       highly unrecommended
@@ -222,7 +222,7 @@ Here I will try to summarize some of them:
     - `P3Home` (moved to `R8`) represent `SystemArgument2`
     - `P4Home` (moved to `RAX`) represent `NormalRoutine`
     - Also, `R9` is set to point to the `RSP` (the `CONTEXT` structure)
-    - Note that `RCX`, `RDX`, `R8` and `R9` are used as first four function parameters in [Microsoft x64 calling convention](x64-abi)
+    - Note that `RCX`, `RDX`, `R8` and `R9` are used as first four function parameters in [Microsoft x64 calling convention][x64-abi]
 
     <p align="center">
       <img src="img/KiUserApcDispatcher.png" />
@@ -307,7 +307,7 @@ Now open administrator command line and run following command:
 `injldr -i`
 
 The `-i` option installs the driver. After the driver is installed, it waits for newly created processes.
-When a new process is created, it is hooked. Prepare some **x86** application, for example, [PuTTY](putty) and run it.
+When a new process is created, it is hooked. Prepare some **x86** application, for example, [PuTTY][putty] and run it.
 With **Process Explorer** we can check that indeed, our x64 DLL is injected in this x86 application.
 
 <p align="center">
@@ -359,3 +359,4 @@ If you find this project interesting, you can buy me a coffee
   [WSL]: <https://docs.microsoft.com/en-us/windows/wsl/faq>
   [test-signing]: <https://docs.microsoft.com/en-us/windows-hardware/drivers/install/the-testsigning-boot-configuration-option>
   [PuTTY]: <https://www.chiark.greenend.org.uk/~sgtatham/putty/>
+  [wdk]: <https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk>
