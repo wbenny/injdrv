@@ -251,6 +251,11 @@ Here I will try to summarize some of them:
   - It doesn't break anything, because this field has been already used (when fetching `NormalContext`) and is
     no longer accessed (not even by `ZwContinue`)
 
+  > **NOTE**: Not all function calls from x86 NTDLL end up in x64 NTDLL. This is because some functions are fully
+  > implemented on its own in both x86 and x64 NTDLL. This applies mainly on functions that does not require any
+  > syscall - i.e. `Rtl*` functions. For example, if you wanted to hook `RtlDecompressBuffer` in WoW64 process,
+  > hooking that function in x64 NTDLL wouldn't have any effect and such hooked function would be never called.
+
 - Injection of **x86** processes on **x86** Windows is handled exactly the same way as injection of **WoW64** processes
   with **x86 DLL** on **x64** Windows (with the exception of `PsWrapApcWow64Thread` call).
 
