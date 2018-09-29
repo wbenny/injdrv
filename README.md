@@ -124,10 +124,15 @@ Here I will try to summarize some of them:
   kernel-mode to user-mode.
 
   > If we happened to not force the delivery of the APC, the APC would've been delivered when the thread would be in
-  > the alertable state. (There are two `Alertable` states per each thread, one for kernel-mode, one for user-mode;
+  > the alertable state. (There are two alertable states per each thread, one for kernel-mode, one for user-mode;
   > this paragraph is talking about `Thread->Alerted[UserMode] == TRUE`.) Luckily, this happens when the Windows loader
-  > finishes its job and gives control to the application (before `WinMain` is executed, roughly speaking). So even if
-  > we happened to not force the APC, our DLL would still be injected before the main execution would take place.
+  > in the `ntdll.dll` finishes its job and gives control to the application - particularly by calling `NtAlertThread`
+  > in the `LdrpInitialize` (or `_LdrpInitialize`) function.  So even if we happened to not force the APC, our DLL would
+  > still be injected before the main execution would take place.
+  >
+  > **NOTE**: This means that if we wouldn't force delivery of the APC on our own, the APC would be delivered **BEFORE**
+  > the `main`/`WinMain` is executed, but **AFTER** all [TLS callbacks][TLS-callbacks] are executed. This is because
+  > TLS callbacks are executed also in the early process initialization stage, within the `LdrpInitialize` function.
   >
   > This behavior is configurable in this project by the `ForceUserApc` variable (by default it's `TRUE`).
   >
@@ -362,6 +367,7 @@ If you find this project interesting, you can buy me a coffee
   [x64-abi]: <https://en.wikipedia.org/wiki/X86_calling_conventions#Microsoft_x64_calling_convention>
   [blackbone-unprotect-process]: <https://github.com/DarthTon/Blackbone/blob/43bc59f68dc1e86347a76192ef3eadc0bf21af67/src/BlackBoneDrv/Inject.c#L144>
   [WSL]: <https://docs.microsoft.com/en-us/windows/wsl/faq>
+  [TLS-callbacks]: <http://www.hexblog.com/?p=9>
   [test-signing]: <https://docs.microsoft.com/en-us/windows-hardware/drivers/install/the-testsigning-boot-configuration-option>
   [PuTTY]: <https://www.chiark.greenend.org.uk/~sgtatham/putty/>
   [wdk]: <https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk>
