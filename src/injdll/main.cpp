@@ -29,7 +29,33 @@
 //
 // Include Detours.
 //
+
 #include <detours.h>
+
+//
+// This is necessary for x86 builds because of SEH,
+// which is used by Detours.  Look at loadcfg.c file
+// in Visual Studio's CRT source codes for the original
+// implementation.
+//
+
+#if defined(_M_IX86) || defined(_X86_)
+
+EXTERN_C PVOID __safe_se_handler_table[]; /* base of safe handler entry table */
+EXTERN_C BYTE  __safe_se_handler_count;   /* absolute symbol whose address is
+                                             the count of table entries */
+EXTERN_C
+CONST
+DECLSPEC_SELECTANY
+IMAGE_LOAD_CONFIG_DIRECTORY
+_load_config_used = {
+    sizeof(_load_config_used),
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    (SIZE_T)__safe_se_handler_table,
+    (SIZE_T)&__safe_se_handler_count,
+};
+
+#endif
 
 //
 // Unfortunatelly sprintf-like functions are not exposed
