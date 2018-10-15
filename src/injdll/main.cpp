@@ -2,7 +2,6 @@
 // Include NTDLL-related headers.
 //
 
-#include <ntdll_windows.h>
 #include <ntdll.h>
 
 //

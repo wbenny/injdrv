@@ -1,3 +1,6 @@
 [submodule "src/DetoursNT"]
 	path = src/DetoursNT
 	url = git@github.com:wbenny/DetoursNT.git
+[submodule "include/phnt"]
+	path = include/phnt
+	url = git@github.com:processhacker/phnt.git
