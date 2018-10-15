@@ -539,8 +539,8 @@ InjpQueueApc(
   //
 
   PKAPC Apc = ExAllocatePoolWithTag(NonPagedPoolNx,
-                                            sizeof(KAPC),
-                                            INJ_MEMORY_TAG);
+                                    sizeof(KAPC),
+                                    INJ_MEMORY_TAG);
 
   if (!Apc)
   {
@@ -548,7 +548,7 @@ InjpQueueApc(
   }
 
   //
-  // Initialize and queue the UserMode APC.
+  // Initialize and queue the APC.
   //
 
   KeInitializeApc(Apc,                                  // Apc
@@ -1290,8 +1290,8 @@ InjLoadImageNotifyRoutine(
         {
 #if defined(_M_IX86)
           //
-          // On 32-bit Windows for Intel x86 we're interested only
-          // in the ntdll.dll from the \SystemRoot\System32 directory.
+          // On 32-bit Windows we're interested only in the ntdll.dll
+          // from the \SystemRoot\System32 directory.
           //
 
           case INJ_SYSTEM32_NTDLL_LOADED:

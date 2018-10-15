@@ -7,7 +7,7 @@
 
 //
 // GUID:
-//   {53d82d11-cede-4dff-8eb4-f06631800128}
+//   {a4b4ba50-a667-43f5-919b-1e52a6d69bd5}
 //
 
 GUID ProviderGuid = {
@@ -16,7 +16,7 @@ GUID ProviderGuid = {
 
 //
 // GUID:
-//   {a4b4ba50-a667-43f5-919b-1e52a6d69bd5}
+//   {53d82d11-cede-4dff-8eb4-f06631800128}
 //
 
 GUID SessionGuid = {

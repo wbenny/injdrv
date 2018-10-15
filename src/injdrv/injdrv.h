@@ -1,6 +1,10 @@
 #pragma once
 #include <ntddk.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 // Structures.
 //////////////////////////////////////////////////////////////////////////
@@ -99,3 +103,7 @@ NTAPI
 InjInject(
   _In_ PINJ_INJECTION_INFO InjectionInfo
   );
+
+#ifdef __cplusplus
+}
+#endif
