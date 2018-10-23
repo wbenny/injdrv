@@ -1,3 +1,5 @@
+#define _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE 1
+
 #include <stdio.h>
 #include <windows.h>
 #include <evntrace.h>
@@ -24,6 +26,130 @@ GUID SessionGuid = {
 };
 
 TCHAR SessionName[] = TEXT("InjSession");
+
+BOOLEAN
+WINAPI
+CreateMiniFilterDriverRegistryKeys(
+  VOID
+  )
+{
+  BOOLEAN Result = FALSE;
+
+#define INSTANCE_NAME       "def"
+
+  TCHAR RegistryPath[] =  TEXT("SYSTEM\\CurrentControlSet\\Services\\")
+                          TEXT(DRIVER_NAME)
+                          TEXT("\\Instances");
+
+  TCHAR RegistryPath2[] = TEXT("SYSTEM\\CurrentControlSet\\Services\\")
+                          TEXT(DRIVER_NAME)
+                          TEXT("\\Instances\\")
+                          TEXT(INSTANCE_NAME);
+
+
+  //
+  // Create registry key for the service.
+  //
+
+  HKEY Key = NULL;
+  HKEY KeySub = NULL;
+
+  LSTATUS Status;
+
+  Status = RegCreateKeyEx(HKEY_LOCAL_MACHINE,
+                          RegistryPath,
+                          0,
+                          NULL,
+                          0,
+                          KEY_ALL_ACCESS,
+                          NULL,
+                          &Key,
+                          NULL);
+
+  if (Status != ERROR_SUCCESS)
+  {
+    goto Error;
+  }
+
+  //
+  // Set "DefaultInstance".  It may be used when the service is a file system
+  // mini-filter driver.  Otherwise, it will simply be ignored.
+  //
+
+  Status = RegSetValueEx(Key,
+                         TEXT("DefaultInstance"),
+                         0,
+                         REG_SZ,
+                         (PBYTE)TEXT(INSTANCE_NAME),
+                         sizeof(TEXT(INSTANCE_NAME)));
+
+  if (Status != ERROR_SUCCESS)
+  {
+    goto Error;
+  }
+
+  //
+  // Create a sub key.
+  //
+
+  Status = RegCreateKeyEx(HKEY_LOCAL_MACHINE,
+                          RegistryPath2,
+                          0,
+                          NULL,
+                          0,
+                          KEY_ALL_ACCESS,
+                          NULL,
+                          &KeySub,
+                          NULL);
+
+  if (Status != ERROR_SUCCESS)
+  {
+    goto Error;
+  }
+
+  //
+  // Set "Altitude".  It may be used when the service is a file system
+  // mini-filter driver.  Otherwise, it will simply be ignored.
+  //
+
+  TCHAR AltitudeValue[] = TEXT("370040");
+  Status = RegSetValueEx(KeySub,
+                         TEXT("Altitude"),
+                         0,
+                         REG_SZ,
+                         (PBYTE)AltitudeValue,
+                         sizeof(AltitudeValue));
+
+  if (Status != ERROR_SUCCESS)
+  {
+    goto Error;
+  }
+
+  //
+  // Set "Flags".  It may be used when the service is a file system
+  // mini-filter driver.  Otherwise, it will simply be ignored.
+  //
+
+  DWORD FlagsValue = 0;
+  Status = RegSetValueEx(KeySub,
+                         TEXT("Flags"),
+                         0,
+                         REG_DWORD,
+                         (PBYTE)&FlagsValue,
+                         sizeof(FlagsValue));
+
+  if (Status != ERROR_SUCCESS)
+  {
+    goto Error;
+  }
+
+  Result = TRUE;
+
+Error:
+  RegCloseKey(KeySub);
+  RegCloseKey(Key);
+  return Result;
+}
 
 VOID
 WINAPI
@@ -175,11 +301,20 @@ DoInstallUninstall(
 
   if (Install)
   {
+    if (!CreateMiniFilterDriverRegistryKeys())
+    {
+      printf("Unable to install mini-filter registry keys.\n");
+
+      //
+      // Do not consider this error as critical.
+      //
+    }
+
     if (!ManageDriver(TEXT(DRIVER_NAME),
                       driverLocation,
                       DRIVER_FUNC_INSTALL))
     {
-      printf("Unable to install driver. \n");
+      printf("Unable to install driver.\n");
 
       //
       // Error - remove driver.
@@ -227,6 +362,10 @@ CtrlCHandlerRoutine(
 
 int main(int argc, char* argv[])
 {
+//   LoadLibrary(TEXT("injdllx64.dll"));
+//
+//   return 0;
+//
   SetConsoleCtrlHandler(&CtrlCHandlerRoutine, TRUE);
 
   //

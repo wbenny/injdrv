@@ -1,8 +1,36 @@
+#define _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE 1
+
+#include "wow64log.h"
+
 //
 // Include NTDLL-related headers.
 //
-
+#define NTDLL_NO_INLINE_INIT_STRING
 #include <ntdll.h>
+
+#if defined(_M_IX86)
+#  define ARCH_A          "x86"
+#  define ARCH_W         L"x86"
+#elif defined(_M_AMD64)
+#  define ARCH_A          "x64"
+#  define ARCH_W         L"x64"
+#elif defined(_M_ARM)
+#  define ARCH_A          "ARM32"
+#  define ARCH_W         L"ARM32"
+#elif defined(_M_ARM64)
+#  define ARCH_A          "ARM64"
+#  define ARCH_W         L"ARM64"
+#else
+#  error Unknown architecture
+#endif
+
+
+// size_t strlen(const char * str)
+// {
+//   const char *s;
+//   for (s = str; *s; ++s) {}
+//   return(s - str);
+// }
 
 //
 // Include support for ETW logging.
@@ -148,6 +176,7 @@ HookNtCreateThreadEx(
   //
   // Log the function call.
   //
+
   WCHAR Buffer[128];
   _snwprintf(Buffer,
              RTL_NUMBER_OF(Buffer),
@@ -281,6 +310,14 @@ OnProcessAttach(
   }
 
   //
+  // Create exports for Wow64Log* functions in
+  // the PE header of this DLL.
+  //
+
+  Wow64LogCreateExports(ModuleHandle);
+
+
+  //
   // Register ETW provider.
   //
 
@@ -310,10 +347,14 @@ OnProcessAttach(
 
   PWSTR CommandLine = Peb->ProcessParameters->CommandLine.Buffer;
 
-  EtwEventWriteString(ProviderHandle,
-                      0,
-                      0,
-                      CommandLine);
+  WCHAR Buffer[1024];
+  _snwprintf(Buffer,
+             RTL_NUMBER_OF(Buffer),
+             L"Arch: %s, CommandLine: '%s'",
+             ARCH_W,
+             CommandLine);
+
+  EtwEventWriteString(ProviderHandle, 0, 0, Buffer);
 
   //
   // Hook all functions.
@@ -337,7 +378,7 @@ OnProcessDetach(
 
 EXTERN_C
 BOOL
-WINAPI
+NTAPI
 NtDllMain(
   _In_ HANDLE ModuleHandle,
   _In_ ULONG Reason,
@@ -365,3 +406,4 @@ NtDllMain(
 
   return TRUE;
 }
+

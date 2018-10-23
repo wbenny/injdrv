@@ -2,9 +2,25 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- ProjectConfigurations -->
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
@@ -62,7 +78,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <AdditionalDependencies>ntdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>NtDllMain</EntryPointSymbol>
@@ -111,6 +127,7 @@
   <!-- Items -->
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="wow64log.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DetoursNT\DetoursNT\DetoursNT.vcxproj">
@@ -118,36 +135,38 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\ntdbg.h" />
     <ClInclude Include="..\..\include\ntdll.h" />
-    <ClInclude Include="..\..\include\ntdll_ntdef.h" />
-    <ClInclude Include="..\..\include\ntdll_windows.h" />
-    <ClInclude Include="..\..\include\ntexapi.h" />
-    <ClInclude Include="..\..\include\ntgdi.h" />
-    <ClInclude Include="..\..\include\ntioapi.h" />
-    <ClInclude Include="..\..\include\ntkeapi.h" />
-    <ClInclude Include="..\..\include\ntldr.h" />
-    <ClInclude Include="..\..\include\ntlpcapi.h" />
-    <ClInclude Include="..\..\include\ntmisc.h" />
-    <ClInclude Include="..\..\include\ntmmapi.h" />
-    <ClInclude Include="..\..\include\ntnls.h" />
-    <ClInclude Include="..\..\include\ntobapi.h" />
-    <ClInclude Include="..\..\include\ntpebteb.h" />
-    <ClInclude Include="..\..\include\ntpfapi.h" />
-    <ClInclude Include="..\..\include\ntpnpapi.h" />
-    <ClInclude Include="..\..\include\ntpoapi.h" />
-    <ClInclude Include="..\..\include\ntpsapi.h" />
-    <ClInclude Include="..\..\include\ntregapi.h" />
-    <ClInclude Include="..\..\include\ntrtl.h" />
-    <ClInclude Include="..\..\include\ntsam.h" />
-    <ClInclude Include="..\..\include\ntseapi.h" />
-    <ClInclude Include="..\..\include\ntsmss.h" />
-    <ClInclude Include="..\..\include\nttmapi.h" />
-    <ClInclude Include="..\..\include\nttp.h" />
-    <ClInclude Include="..\..\include\ntwow64.h" />
-    <ClInclude Include="..\..\include\ntxcapi.h" />
-    <ClInclude Include="..\..\include\ntzwapi.h" />
-    <ClInclude Include="..\..\include\subprocesstag.h" />
-    <ClInclude Include="..\..\include\winsta.h" />
+    <ClInclude Include="..\..\include\phnt\ntdbg.h" />
+    <ClInclude Include="..\..\include\phnt\ntexapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntgdi.h" />
+    <ClInclude Include="..\..\include\phnt\ntioapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntkeapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntldr.h" />
+    <ClInclude Include="..\..\include\phnt\ntlpcapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntmisc.h" />
+    <ClInclude Include="..\..\include\phnt\ntmmapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntnls.h" />
+    <ClInclude Include="..\..\include\phnt\ntobapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntpebteb.h" />
+    <ClInclude Include="..\..\include\phnt\ntpfapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntpnpapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntpoapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntpsapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntregapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntrtl.h" />
+    <ClInclude Include="..\..\include\phnt\ntsam.h" />
+    <ClInclude Include="..\..\include\phnt\ntseapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntsmss.h" />
+    <ClInclude Include="..\..\include\phnt\nttmapi.h" />
+    <ClInclude Include="..\..\include\phnt\nttp.h" />
+    <ClInclude Include="..\..\include\phnt\ntwow64.h" />
+    <ClInclude Include="..\..\include\phnt\ntxcapi.h" />
+    <ClInclude Include="..\..\include\phnt\ntzwapi.h" />
+    <ClInclude Include="..\..\include\phnt\phnt.h" />
+    <ClInclude Include="..\..\include\phnt\phnt_ntdef.h" />
+    <ClInclude Include="..\..\include\phnt\phnt_windows.h" />
+    <ClInclude Include="..\..\include\phnt\subprocesstag.h" />
+    <ClInclude Include="..\..\include\phnt\winsta.h" />
+    <ClInclude Include="wow64log.h" />
   </ItemGroup>
 </Project>

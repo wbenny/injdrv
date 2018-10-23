@@ -1,3 +1,4 @@
+#define _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE 1
 #include "install.h"
 
 #include <stdio.h>
