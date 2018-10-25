@@ -1046,7 +1046,7 @@ InjRemoveInjectionInfoByProcessId(
 
   if (InjectionInfo)
   {
-    InjRemoveInjectionInfoByProcessId(ProcessId, FreeMemory);
+    InjRemoveInjectionInfo(InjectionInfo, FreeMemory);
   }
 }
 
