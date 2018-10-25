@@ -1,4 +1,4 @@
-#include "injdrv.h"
+#include "injlib.h"
 
 #include <ntddk.h>
 #include <ntimage.h>

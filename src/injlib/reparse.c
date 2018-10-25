@@ -1,6 +1,6 @@
 #include <fltKernel.h>
 
-#include "injdrv.h"
+#include "injlib.h"
 
 //
 // Code taken from the Windows-driver-samples github repository.

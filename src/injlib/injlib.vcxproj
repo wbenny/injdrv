@@ -29,8 +29,8 @@
   </ItemGroup>
   <!-- Common settings -->
   <PropertyGroup Label="Globals">
-    <RootNamespace>injdrv</RootNamespace>
-    <ProjectGuid>{46A74761-6CFA-41AF-A536-47F08E2C7B48}</ProjectGuid>
+    <RootNamespace>injlib</RootNamespace>
+    <ProjectGuid>{E2ABAE21-2862-4356-BA49-28C060878D76}</ProjectGuid>
     <TemplateGuid>{1bc93793-694f-48fe-9372-81e2b05556fd}</TemplateGuid>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
@@ -43,7 +43,7 @@
     <TargetVersion>
     </TargetVersion>
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
-    <ConfigurationType>Driver</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <DriverType>WDM</DriverType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -97,24 +97,27 @@
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">FltMgr.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">FltMgr.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>
     </Link>
+    <Lib>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</LinkTimeCodeGeneration>
+    </Lib>
+    <Lib>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</LinkTimeCodeGeneration>
+    </Lib>
+    <Lib>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</LinkTimeCodeGeneration>
+    </Lib>
   </ItemDefinitionGroup>
   <!-- Targets -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <!-- Items -->
   <ItemGroup>
-    <Inf Include="injdrv.inf">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-    </Inf>
-  </ItemGroup>
-  <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.c" />
+    <ClCompile Include="injlib.c" />
+    <ClCompile Include="reparse.c" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\injlib\injlib.vcxproj">
-      <Project>{e2abae21-2862-4356-ba49-28c060878d76}</Project>
-    </ProjectReference>
+    <ClInclude Include="injlib.h" />
   </ItemGroup>
 </Project>

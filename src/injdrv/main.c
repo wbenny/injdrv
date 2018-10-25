@@ -1,4 +1,4 @@
-#include "injdrv.h"
+#include "../injlib/injlib.h"
 
 #include <ntddk.h>
 
