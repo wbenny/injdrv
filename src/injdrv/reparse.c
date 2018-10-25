@@ -122,7 +122,8 @@ SimRepPreCreate(
 NTSTATUS
 NTAPI
 SimRepInitialize(
-    _In_ PDRIVER_OBJECT DriverObject
+    _In_ PDRIVER_OBJECT DriverObject,
+    _In_ PUNICODE_STRING RegistryPath
     );
 
 NTSTATUS
@@ -861,10 +862,166 @@ SimRepPreCreateCleanup:
 // Public functions.
 //////////////////////////////////////////////////////////////////////////
 
+#define SIMREP_INSTANCE_NAME        L"Reparse"
+#define SIMREP_INSTANCE_ALTITUDE    L"370040"
+
+NTSTATUS
+NTAPI
+SimRepInitializeRegistry(
+    _In_ PUNICODE_STRING RegistryPath
+    )
+{
+    NTSTATUS Status;
+    OBJECT_ATTRIBUTES ObjectAttributes;
+
+    //
+    // ...\CurrentControlSet\Services\[DriverName]\Instances
+    //
+
+    UNICODE_STRING InstancesSubkeyString = RTL_CONSTANT_STRING(L"\\Instances");
+    UNICODE_STRING InstancesSubkeyPath;
+    InstancesSubkeyPath.MaximumLength = RegistryPath->Length + InstancesSubkeyString.Length;
+    Status = SimRepAllocateUnicodeString(&InstancesSubkeyPath);
+
+    if (!NT_SUCCESS(Status))
+    {
+        goto ErrorInstancesSubkeyPath;
+    }
+
+    RtlAppendUnicodeStringToString(&InstancesSubkeyPath, RegistryPath);
+    RtlAppendUnicodeStringToString(&InstancesSubkeyPath, &InstancesSubkeyString);
+
+    InitializeObjectAttributes(&ObjectAttributes,
+                               &InstancesSubkeyPath,
+                               OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+                               NULL,
+                               NULL);
+
+    HANDLE InstancesSubkeyHandle;
+    Status = ZwCreateKey(&InstancesSubkeyHandle,
+                         KEY_ALL_ACCESS,
+                         &ObjectAttributes,
+                         0,
+                         NULL,
+                         0,
+                         NULL);
+
+    if (!NT_SUCCESS(Status))
+    {
+        goto ErrorInstanceSubkeyHandle;
+    }
+
+    //
+    // ...\CurrentControlSet\Services\[DriverName]\Instances\Reparse
+    //
+
+    UNICODE_STRING ReparseSubkeyString = RTL_CONSTANT_STRING(L"\\" SIMREP_INSTANCE_NAME);
+    UNICODE_STRING ReparseSubkeyPath;
+    ReparseSubkeyPath.MaximumLength = InstancesSubkeyPath.Length + ReparseSubkeyString.Length;
+    Status = SimRepAllocateUnicodeString(&ReparseSubkeyPath);
+
+    if (!NT_SUCCESS(Status))
+    {
+        goto ErrorReparseSubkeyPath;
+    }
+
+    RtlAppendUnicodeStringToString(&ReparseSubkeyPath, &InstancesSubkeyPath);
+    RtlAppendUnicodeStringToString(&ReparseSubkeyPath, &ReparseSubkeyString);
+
+
+    InitializeObjectAttributes(&ObjectAttributes,
+                               &ReparseSubkeyPath,
+                               OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+                               NULL,
+                               NULL);
+
+    HANDLE ReparseSubkeyHandle;
+    Status = ZwCreateKey(&ReparseSubkeyHandle,
+                         KEY_ALL_ACCESS,
+                         &ObjectAttributes,
+                         0,
+                         NULL,
+                         0,
+                         NULL);
+
+    if (!NT_SUCCESS(Status))
+    {
+        goto ErrorReparseSubkeyHandle;
+    }
+
+    //
+    // ...\CurrentControlSet\Services\[DriverName]\Instances\DefaultInstance
+    //
+
+    UNICODE_STRING DefaultInstanceString = RTL_CONSTANT_STRING(L"DefaultInstance");
+    WCHAR DefaultInstanceValue[] = SIMREP_INSTANCE_NAME;
+
+    Status = ZwSetValueKey(InstancesSubkeyHandle,
+                           &DefaultInstanceString,
+                           0,
+                           REG_SZ,
+                           DefaultInstanceValue,
+                           sizeof(DefaultInstanceValue));
+
+    if (!NT_SUCCESS(Status))
+    {
+        goto ErrorSetValueKey;
+    }
+
+    //
+    // ...\CurrentControlSet\Services\[DriverName]\Instances\Reparse\Altitude
+    //
+
+    UNICODE_STRING AltitudeString = RTL_CONSTANT_STRING(L"Altitude");
+    WCHAR AltitudeValue[] = SIMREP_INSTANCE_ALTITUDE;
+
+    Status = ZwSetValueKey(ReparseSubkeyHandle,
+                           &AltitudeString,
+                           0,
+                           REG_SZ,
+                           AltitudeValue,
+                           sizeof(AltitudeValue));
+
+    if (!NT_SUCCESS(Status))
+    {
+        goto ErrorSetValueKey;
+    }
+
+    //
+    // ...\CurrentControlSet\Services\[DriverName]\Instances\Reparse\Flags
+    //
+
+    UNICODE_STRING FlagsString = RTL_CONSTANT_STRING(L"Flags");
+    ULONG FlagsValue = 0;
+
+    Status = ZwSetValueKey(ReparseSubkeyHandle,
+                           &FlagsString,
+                           0,
+                           REG_DWORD,
+                           &FlagsValue,
+                           sizeof(FlagsValue));
+
+ErrorSetValueKey:
+    ZwClose(ReparseSubkeyHandle);
+
+ErrorReparseSubkeyHandle:
+    ZwClose(InstancesSubkeyHandle);
+
+ErrorInstanceSubkeyHandle:
+    SimRepFreeUnicodeString(&ReparseSubkeyPath);
+
+ErrorReparseSubkeyPath:
+    SimRepFreeUnicodeString(&InstancesSubkeyPath);
+
+ErrorInstancesSubkeyPath:
+    return Status;
+}
+
 NTSTATUS
 NTAPI
 SimRepInitialize(
-    _In_ PDRIVER_OBJECT DriverObject
+    _In_ PDRIVER_OBJECT DriverObject,
+    _In_ PUNICODE_STRING RegistryPath
     )
 {
     NTSTATUS status;
@@ -886,6 +1043,17 @@ SimRepInitialize(
     }
 
     //
+    //  Initialize registry keys for the mini-filter.
+    //
+
+    status = SimRepInitializeRegistry(RegistryPath);
+
+    if (!NT_SUCCESS(status)) {
+
+        return status;
+    }
+
+    //
     //  Skip the drive name (such as "C:").
     //
 
@@ -904,6 +1072,7 @@ SimRepInitialize(
                                 &Filter );
 
     if (!NT_SUCCESS( status )) {
+
         return status;
     }
 

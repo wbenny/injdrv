@@ -219,7 +219,8 @@ InjpInjectApcKernelRoutine(
 NTSTATUS
 NTAPI
 SimRepInitialize(
-  _In_ PDRIVER_OBJECT DriverObject
+  _In_ PDRIVER_OBJECT DriverObject,
+  _In_ PUNICODE_STRING RegistryPath
   );
 
 //////////////////////////////////////////////////////////////////////////
@@ -866,6 +867,7 @@ NTSTATUS
 NTAPI
 InjInitialize(
   _In_ PDRIVER_OBJECT DriverObject,
+  _In_ PUNICODE_STRING RegistryPath,
   _In_ PINJ_SETTINGS Settings
   )
 {
@@ -937,7 +939,7 @@ InjInitialize(
 
   if (InjMethod == InjMethodWow64LogReparse)
   {
-    Status = SimRepInitialize(DriverObject);
+    Status = SimRepInitialize(DriverObject, RegistryPath);
   }
 
   return Status;

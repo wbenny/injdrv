@@ -257,7 +257,7 @@ DriverEntry(
   // Initialize injection driver.
   //
 
-  Status = InjInitialize(DriverObject, &Settings);
+  Status = InjInitialize(DriverObject, RegistryPath, &Settings);
 
   if (!NT_SUCCESS(Status))
   {
