@@ -1114,7 +1114,24 @@ InjCanInject(
     switch (PsWow64GetProcessMachine(PsGetCurrentProcess()))
     {
       case IMAGE_FILE_MACHINE_I386:
-        RequiredDlls |= INJ_SYCHPE32_NTDLL_LOADED;
+
+        //
+        // Emulated x86 processes can load either SyCHPE32\ntdll.dll or
+        // SysWOW64\ntdll.dll - depending on whether "hybrid execution
+        // mode" is enabled or disabled.
+        //
+        // PsWow64GetProcessNtdllType(Process) can provide this information,
+        // by returning EPROCESS->Wow64Process.NtdllType.  Unfortunatelly,
+        // that function is not exported and EPROCESS is not documented.
+        //
+        // The solution here is to pick the Wow64 NTDLL which is already
+        // loaded and set it as "required".
+        //
+
+        RequiredDlls |= InjectionInfo->LoadedDlls & (
+                        INJ_SYSWOW64_NTDLL_LOADED |
+                        INJ_SYCHPE32_NTDLL_LOADED
+                        );
         RequiredDlls |= INJ_SYSTEM32_XTAJIT_LOADED;
         break;
 
