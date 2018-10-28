@@ -160,22 +160,22 @@ InjCreateSettings(
 #define INJ_DLL_X86_NAME    L"injdllx86.dll"
   UNICODE_STRING InjDllNameX86 = RTL_CONSTANT_STRING(INJ_DLL_X86_NAME);
   InjpJoinPath(&Directory, &InjDllNameX86, &Settings->DllPath[InjArchitectureX86]);
-  InjDbgPrint("DLL path (x86):   '%wZ'\n", &Settings->DllPath[InjArchitectureX86]);
+  InjDbgPrint("[injdrv]: DLL path (x86):   '%wZ'\n", &Settings->DllPath[InjArchitectureX86]);
 
 #define INJ_DLL_X64_NAME    L"injdllx64.dll"
   UNICODE_STRING InjDllNameX64 = RTL_CONSTANT_STRING(INJ_DLL_X64_NAME);
   InjpJoinPath(&Directory, &InjDllNameX64, &Settings->DllPath[InjArchitectureX64]);
-  InjDbgPrint("DLL path (x64):   '%wZ'\n", &Settings->DllPath[InjArchitectureX64]);
+  InjDbgPrint("[injdrv]: DLL path (x64):   '%wZ'\n", &Settings->DllPath[InjArchitectureX64]);
 
 #define INJ_DLL_ARM32_NAME  L"injdllARM.dll"
   UNICODE_STRING InjDllNameARM32 = RTL_CONSTANT_STRING(INJ_DLL_ARM32_NAME);
   InjpJoinPath(&Directory, &InjDllNameARM32, &Settings->DllPath[InjArchitectureARM32]);
-  InjDbgPrint("DLL path (ARM32): '%wZ'\n",   &Settings->DllPath[InjArchitectureARM32]);
+  InjDbgPrint("[injdrv]: DLL path (ARM32): '%wZ'\n",   &Settings->DllPath[InjArchitectureARM32]);
 
 #define INJ_DLL_ARM64_NAME  L"injdllARM64.dll"
   UNICODE_STRING InjDllNameARM64 = RTL_CONSTANT_STRING(INJ_DLL_ARM64_NAME);
   InjpJoinPath(&Directory, &InjDllNameARM64, &Settings->DllPath[InjArchitectureARM64]);
-  InjDbgPrint("DLL path (ARM64): '%wZ'\n",   &Settings->DllPath[InjArchitectureARM64]);
+  InjDbgPrint("[injdrv]: DLL path (ARM64): '%wZ'\n",   &Settings->DllPath[InjArchitectureARM64]);
 
   return STATUS_SUCCESS;
 }

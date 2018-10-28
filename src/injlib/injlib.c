@@ -904,7 +904,7 @@ InjInitialize(
   if (VersionInformation.dwMajorVersion == 6 &&
       VersionInformation.dwMinorVersion == 1)
   {
-    InjDbgPrint("Current system is Windows 7\n");
+    InjDbgPrint("[injlib]: Current system is Windows 7\n");
     InjIsWindows7 = TRUE;
   }
 
@@ -930,7 +930,7 @@ InjInitialize(
   InjMethod = InjMethodThunk;
 #endif
 
-  InjDbgPrint("InjMethod: '%s'\n",
+  InjDbgPrint("[injlib]: InjMethod: '%s'\n",
     InjMethod == InjMethodThunk           ? "InjMethodThunk"           :
     InjMethod == InjMethodThunkless       ? "InjMethodThunkLess"       :
     InjMethod == InjMethodWow64LogReparse ? "InjMethodWow64LogReparse" :
@@ -1322,7 +1322,7 @@ InjLoadImageNotifyRoutine(
     // disabled on such processes.  (Look for BBSetProtection).
     //
 
-    InjDbgPrint("Ignoring protected process (PID: %u, Name: '%s')\n",
+    InjDbgPrint("[injlib]: Ignoring protected process (PID: %u, Name: '%s')\n",
                 (ULONG)(ULONG_PTR)ProcessId,
                 PsGetProcessImageFileName(PsGetCurrentProcess()));
 
@@ -1422,7 +1422,7 @@ InjLoadImageNotifyRoutine(
           RtlxSuffixUnicodeString(&System32User32Path, FullImageName, TRUE) ||
           RtlxSuffixUnicodeString(&SysWOW64User32Path, FullImageName, TRUE))
       {
-        InjDbgPrint("Postponing injection (%wZ)\n", FullImageName);
+        InjDbgPrint("[injlib]: Postponing injection (%wZ)\n", FullImageName);
         return;
       }
     }
@@ -1440,12 +1440,12 @@ InjLoadImageNotifyRoutine(
     //
 
 #if defined(INJ_CONFIG_SUPPORTS_WOW64)
-    InjDbgPrint("Injecting (PID: %u, Wow64: %s, Name: '%s')\n",
+    InjDbgPrint("[injlib]: Injecting (PID: %u, Wow64: %s, Name: '%s')\n",
                 (ULONG)(ULONG_PTR)ProcessId,
                 PsGetProcessWow64Process(PsGetCurrentProcess()) ? "TRUE" : "FALSE",
                 PsGetProcessImageFileName(PsGetCurrentProcess()));
 #else
-    InjDbgPrint("Injecting (PID: %u, Name: '%s')\n",
+    InjDbgPrint("[injlib]: Injecting (PID: %u, Name: '%s')\n",
                 (ULONG)(ULONG_PTR)ProcessId,
                 PsGetProcessImageFileName(PsGetCurrentProcess()));
 
