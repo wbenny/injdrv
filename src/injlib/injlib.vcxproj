@@ -75,6 +75,9 @@
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FltMgr.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">FltMgr.lib;%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>
     </Link>
+    <Lib>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</LinkTimeCodeGeneration>
+    </Lib>
   </ItemDefinitionGroup>
   <!-- Debug -->
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
