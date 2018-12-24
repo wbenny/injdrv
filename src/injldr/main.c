@@ -69,9 +69,6 @@ TraceStart(
 
   PEVENT_TRACE_PROPERTIES EventTraceProperties = (PEVENT_TRACE_PROPERTIES)Buffer;
   EventTraceProperties->Wnode.BufferSize = sizeof(Buffer);
-
-  RtlZeroMemory(Buffer, sizeof(Buffer));
-  EventTraceProperties->Wnode.BufferSize = sizeof(Buffer);
   EventTraceProperties->Wnode.ClientContext = 1; // Use QueryPerformanceCounter, see MSDN
   EventTraceProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
   EventTraceProperties->LogFileMode = PROCESS_TRACE_MODE_REAL_TIME;
