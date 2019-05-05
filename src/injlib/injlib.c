@@ -720,6 +720,7 @@ InjpInject(
   // Reassign remapped address.
   //
 
+  ApcRoutineAddress = SectionMemoryAddress;
   DllPath = (PWCHAR)((PUCHAR)SectionMemoryAddress + InjThunk[Architecture].Length);
 
   PVOID ApcContext   = (PVOID)InjectionInfo->LdrLoadDllRoutineAddress;
