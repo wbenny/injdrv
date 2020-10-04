@@ -212,6 +212,12 @@ InjpInjectApcKernelRoutine(
   _Inout_ PVOID* SystemArgument2
   );
 
+VOID
+NTAPI
+InjpInjectApcRundownRoutine(
+  _In_ PKAPC Apc
+);
+
 //
 // reparse.c
 //
@@ -382,6 +388,8 @@ UCHAR InjpThunkARM64[] = {            //
 
 LIST_ENTRY      InjInfoListHead;
 FAST_MUTEX      InjInfoMutex;
+
+EX_RUNDOWN_REF  ApcRundownProtection;
 
 INJ_METHOD      InjMethod;
 
@@ -582,10 +590,24 @@ InjpQueueApc(
                   PsGetCurrentThread(),                 // Thread
                   OriginalApcEnvironment,               // Environment
                   &InjpInjectApcKernelRoutine,          // KernelRoutine
-                  NULL,                                 // RundownRoutine
+                  &InjpInjectApcRundownRoutine,         // RundownRoutine
                   NormalRoutine,                        // NormalRoutine
                   ApcMode,                              // ApcMode
                   NormalContext);                       // NormalContext
+
+
+  //
+  // Aquire rundown protection before inserting new 
+  // KernelMode APC and release it after injecting
+  //
+
+  if (ApcMode == KernelMode) {
+    BOOLEAN aquired = ExAcquireRundownProtection(&ApcRundownProtection);
+    if (!aquired) {
+      ExFreePoolWithTag(Apc, INJ_MEMORY_TAG);
+      return STATUS_UNSUCCESSFUL;
+    }
+  }
 
   BOOLEAN Inserted = KeInsertQueueApc(Apc,              // Apc
                                       SystemArgument1,  // SystemArgument1
@@ -595,6 +617,11 @@ InjpQueueApc(
   if (!Inserted)
   {
     ExFreePoolWithTag(Apc, INJ_MEMORY_TAG);
+
+    if (ApcMode == KernelMode) {
+      ExReleaseRundownProtection(&ApcRundownProtection);
+    }
+
     return STATUS_UNSUCCESSFUL;
   }
 
@@ -614,6 +641,15 @@ InjpInjectApcNormalRoutine(
 
   PINJ_INJECTION_INFO InjectionInfo = NormalContext;
   InjInject(InjectionInfo);
+}
+
+VOID
+NTAPI
+InjpInjectApcRundownRoutine(
+  _In_ PKAPC Apc
+) {
+  ExFreePoolWithTag(Apc, INJ_MEMORY_TAG);
+  ExReleaseRundownProtection(&ApcRundownProtection);
 }
 
 VOID
@@ -882,6 +918,12 @@ InjInitialize(
   InitializeListHead(&InjInfoListHead);
   ExInitializeFastMutex(&InjInfoMutex);
 
+  //
+  // Initialize APC rundown protection
+  //
+
+  ExInitializeRundownProtection(&ApcRundownProtection);
+
   ULONG Flags = RTL_DUPLICATE_UNICODE_STRING_NULL_TERMINATE
               | RTL_DUPLICATE_UNICODE_STRING_ALLOCATE_NULL_STRING;
 
@@ -985,6 +1027,12 @@ InjDestroy(
   }
 
   ExReleaseFastMutex(&InjInfoMutex);
+
+  //
+  // Prevent unloading while there are APCs in the queue
+  //
+
+  ExWaitForRundownProtectionRelease(&ApcRundownProtection);
 }
 
 NTSTATUS
@@ -1270,6 +1318,7 @@ InjInject(
 #endif
 
   ZwClose(SectionHandle);
+  ExReleaseRundownProtection(&ApcRundownProtection);
 
   if (NT_SUCCESS(Status) && InjectionInfo->ForceUserApc)
   {
