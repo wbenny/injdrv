@@ -602,8 +602,8 @@ InjpQueueApc(
   //
 
   if (ApcMode == KernelMode) {
-    BOOLEAN aquired = ExAcquireRundownProtection(&ApcRundownProtection);
-    if (!aquired) {
+    BOOLEAN acquired = ExAcquireRundownProtection(&ApcRundownProtection);
+    if (!acquired) {
       ExFreePoolWithTag(Apc, INJ_MEMORY_TAG);
       return STATUS_UNSUCCESSFUL;
     }
