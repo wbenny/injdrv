@@ -381,6 +381,7 @@ UCHAR InjpThunkARM64[] = {            //
 //////////////////////////////////////////////////////////////////////////
 
 LIST_ENTRY      InjInfoListHead;
+FAST_MUTEX      InjInfoMutex;
 
 INJ_METHOD      InjMethod;
 
@@ -879,6 +880,7 @@ InjInitialize(
   //
 
   InitializeListHead(&InjInfoListHead);
+  ExInitializeFastMutex(&InjInfoMutex);
 
   ULONG Flags = RTL_DUPLICATE_UNICODE_STRING_NULL_TERMINATE
               | RTL_DUPLICATE_UNICODE_STRING_ALLOCATE_NULL_STRING;
@@ -959,6 +961,7 @@ InjDestroy(
   //
   // Release memory of all injection-info entries.
   //
+  ExAcquireFastMutex(&InjInfoMutex);
 
   PLIST_ENTRY NextEntry = InjInfoListHead.Flink;
 
@@ -980,6 +983,8 @@ InjDestroy(
   {
     RtlFreeUnicodeString(&InjDllPath[Architecture]);
   }
+
+  ExReleaseFastMutex(&InjInfoMutex);
 }
 
 NTSTATUS
@@ -990,6 +995,8 @@ InjCreateInjectionInfo(
   )
 {
   PINJ_INJECTION_INFO CapturedInjectionInfo;
+
+  ExAcquireFastMutex(&InjInfoMutex);
 
   if (InjectionInfo && *InjectionInfo)
   {
@@ -1003,6 +1010,7 @@ InjCreateInjectionInfo(
 
     if (!CapturedInjectionInfo)
     {
+      ExReleaseFastMutex(&InjInfoMutex);
       return STATUS_INSUFFICIENT_RESOURCES;
     }
 
@@ -1020,6 +1028,8 @@ InjCreateInjectionInfo(
 
   InsertTailList(&InjInfoListHead, &CapturedInjectionInfo->ListEntry);
 
+
+  ExReleaseFastMutex(&InjInfoMutex);
   return STATUS_SUCCESS;
 }
 
@@ -1059,6 +1069,8 @@ InjFindInjectionInfo(
   _In_ HANDLE ProcessId
   )
 {
+  ExAcquireFastMutex(&InjInfoMutex);
+
   PLIST_ENTRY NextEntry = InjInfoListHead.Flink;
 
   while (NextEntry != &InjInfoListHead)
@@ -1069,12 +1081,15 @@ InjFindInjectionInfo(
 
     if (InjectionInfo->ProcessId == ProcessId)
     {
+      ExReleaseFastMutex(&InjInfoMutex);
       return InjectionInfo;
     }
 
     NextEntry = NextEntry->Flink;
   }
 
+
+  ExReleaseFastMutex(&InjInfoMutex);
   return NULL;
 }
 
