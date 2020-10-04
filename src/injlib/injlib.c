@@ -597,7 +597,7 @@ InjpQueueApc(
 
 
   //
-  // Aquire rundown protection before inserting new 
+  // Acquire rundown protection before inserting new 
   // KernelMode APC and release it after injecting
   //
 
